@@ -1,0 +1,130 @@
+# ─────────────────────────────────────────────────────────────
+#  Job alerts config — edit freely, then commit & push.
+#  All text matching is case-insensitive and ignores Polish diacritics.
+# ─────────────────────────────────────────────────────────────
+
+# Only offers published within this window are considered "new".
+# Keep it a bit larger than the schedule interval (1h) so a delayed run doesn't miss anything.
+max_age_hours: 3
+max_notifications_per_run: 25
+
+profile:
+  # Title must match at least ONE of these (regular expressions).
+  title_include:
+    - 'react'
+    - 'front[- ]?end'
+    - 'full[- ]?stack'
+    - 'javascript|typescript|\bjs\b|\bts\b'
+    - 'next\.?js'
+    - 'mobile'
+    - 'web (developer|engineer)'
+    - 'software (developer|engineer)'
+    - 'programista|programistka'
+    - '\bnode'
+
+  # ...and must NOT match any of these.
+  title_exclude:
+    - '\bsenior\b|\bsr\.?\b|\bsnr\b'
+    - '\blead\b|principal|\bstaff\b|architect|head of|manager|director'
+    - '\bangular\b'
+    - '\bvue(\.?js)?\b'
+    - '\bphp\b|laravel|symfony|wordpress'
+    - '\.net\b|\bc#'
+    - '\bjava\s+(developer|engineer)'
+    - '\b(ios|android|swift|kotlin|flutter)\s+(developer|engineer)'
+    - '\bqa\b|tester|test automation'
+    - 'salesforce|sap\b|servicenow'
+
+  # Used only where the board gives a level (JustJoin.it, NoFluffJobs).
+  # Values: trainee, junior, mid, senior
+  seniority_allowed: [junior, mid]
+
+  # Your stack. Use "a|b" for alternative spellings.
+  my_skills:
+    - 'react|react.js|reactjs'
+    - 'react native'
+    - 'typescript|ts'
+    - 'javascript|js|es6'
+    - 'next.js|nextjs'
+    - 'redux|redux toolkit|rtk query'
+    - 'node.js|nodejs|node'
+    - 'nestjs|nest.js'
+    - 'express|express.js'
+    - 'postgresql|postgres'
+    - 'sql'
+    - 'prisma'
+    - 'tailwind|tailwindcss'
+    - 'styled-components|styled components'
+    - 'material ui|mui'
+    - 'html|html5'
+    - 'css|css3|scss|sass'
+    - 'zod'
+    - 'react hook form'
+    - 'docker'
+    - 'azure'
+    - 'github actions|ci/cd'
+    - 'websocket|websockets'
+    - 'rest api|restful'
+    - 'java'
+    - 'spring|spring boot'
+
+  # An offer must mention at least this many of my_skills.
+  min_skill_matches: 1
+
+  # Reject if a STRUCTURED must-have (JustJoin.it / NoFluffJobs) is one of these.
+  reject_if_required:
+    - 'angular'
+    - 'vue|vue.js'
+    - 'php'
+    - 'ruby|rails'
+    - '.net|dotnet|c#'
+    - 'flutter|dart'
+    - 'swift'
+    - 'kotlin'
+    - 'golang|go'
+
+  # Reject if the description matches (regular expressions).
+  reject_patterns:
+    - '(?<![-–\d])\b([5-9]|1\d)\s*\+?\s*(years|yrs|lat)'   # "5+ years", "7 lat"...
+
+  # Max number of must-haves you DON'T have (from my_skills) before an offer is rejected.
+  # Only applied where the board lists must-haves (JustJoin.it, NoFluffJobs).
+  max_missing_required: 2
+
+  # Must-haves that never count as "missing" (soft skills, languages, basics).
+  ignore_missing:
+    - 'english|angielski|polish|polski|ukrainian'
+    - 'git|github|gitlab'
+    - 'jest|testing library|react testing library|unit tests|unit testing|cypress|playwright'
+    - 'webpack|vite|npm|yarn'
+    - 'figma'
+    - 'agile|scrum|jira'
+    - 'communication|teamwork'
+
+  locations:
+    cities: ['Wrocław']
+    allow_remote: true       # remote offers pass regardless of city
+
+sources:
+  justjoin:
+    enabled: true
+    # Category slugs as in justjoin.it URLs (javascript, mobile, ...). Empty = all categories.
+    categories: []
+    max_batches: 15          # ~10 offers per batch, stops early once offers get older than max_age_hours
+
+  nofluffjobs:
+    enabled: true
+    # Same syntax as the search box on nofluffjobs.com
+    raw_search: 'category=frontend,fullstack,mobile seniority=junior,mid city=remote,wroclaw'
+    limit: 300
+
+  jobspy:
+    enabled: true
+    sites: [linkedin, indeed]
+    country_indeed: poland
+    results_wanted: 15       # per search per site; LinkedIn rate-limits if this is large
+    searches:
+      - { search_term: 'react developer',    location: 'Wrocław, Poland' }
+      - { search_term: 'frontend developer', location: 'Wrocław, Poland' }
+      - { search_term: 'react native',       location: 'Poland', is_remote: true }
+      - { search_term: 'react typescript',   location: 'Poland', is_remote: true }
