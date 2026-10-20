@@ -2,11 +2,11 @@ name: job-alerts
 
 on:
   schedule:
-    - cron: "7 * * * *"      # every hour at :07 (UTC). Runs at :00 are often delayed on GitHub.
-  workflow_dispatch: {}       # "Run workflow" button for manual tests
+    - cron: "0 */1 * * *" # Runs every hour
+  workflow_dispatch: {} # "Run workflow" button for manual tests
 
 permissions:
-  contents: write             # needed to commit seen_jobs.json back
+  contents: write # needed to commit seen_jobs.json back
 
 concurrency:
   group: job-alerts
