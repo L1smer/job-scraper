@@ -70,7 +70,7 @@ The dry run also writes `seen_jobs.json`. Delete it if you want the next run to 
    - `TELEGRAM_CHAT_ID`
 4. Go to **Settings → Actions → General → Workflow permissions** and select **Read and write permissions**.
    The bot needs this to commit `seen_jobs.json`.
-5. Go to **Actions → job-alerts → Run workflow** to test it now. After that it runs at :07 every hour.
+5. Go to **Actions → job-alerts → Run workflow** to test it now. After that it runs at :17 every hour.
 
 After each run the workflow commits `seen_jobs.json`, so offers are never sent twice.
 The bot commits to the repo every hour, so run `git pull` before you push your own changes.
@@ -81,6 +81,25 @@ The bot commits to the repo every hour, so run `git pull` before you push your o
 >
 > GitHub cron can start a few minutes late, and it pauses schedules in repos with no activity for 60 days.
 > If that happens, open **Actions** and click **Enable workflow**.
+
+## Checking that every platform works (test mode)
+
+**Actions → job-alerts → Run workflow**, enter e.g. `48` in *TEST MODE* and run it. You get:
+
+- one 🧪 summary message (matches per platform, and any platform that failed);
+- up to 3 matching offers **per platform** from the last 48 h, marked 🧪 TEST.
+
+Test mode ignores `seen_jobs.json` and doesn't change it, so normal alerts aren't affected.
+Locally the same command is `python -m scraper.main --test 48 --dry-run`.
+
+**Reading the log:** each run prints one line per platform, for example
+`[justjoin] listed=180, already seen=170, new=10, skip: title=7, skip: location=2, skip: requirements=1`,
+plus a `✗ … — reason` line for every offer that got past the title filter but was dropped.
+That's how you can see whether a filter is too strict.
+
+**Missed runs:** GitHub often delays or skips scheduled runs, sometimes for hours. Each run looks back
+to the last successful run (up to `max_catchup_hours`), so offers published during a gap still
+get checked. They just arrive late.
 
 ## 4. Tune the filters (`config.yaml`)
 
@@ -96,6 +115,7 @@ The bot commits to the repo every hour, so run `git pull` before you push your o
 | `reject_patterns` | Regex on the description. The default rejects "5+ years" but keeps "3-5 years". |
 | `locations` | Cities you accept. With `allow_remote: true`, remote offers always pass. |
 | `max_age_hours` | Only offers published within this window count as new. |
+| `max_catchup_hours` | After skipped runs, look back to the last run, at most this far. |
 
 How precise the requirements check is depends on the board:
 
@@ -123,7 +143,7 @@ search box) and `sources.jobspy.searches`.
 ## Files
 
 ```
-scraper/main.py              pipeline + CLI (--dry-run, --init, --sources, -v)
+scraper/main.py              pipeline + CLI (--dry-run, --init, --test HOURS, --sources, -v)
 scraper/filters.py           prefilter + requirements filter
 scraper/sources/justjoin.py  justjoin.it/api/candidate-api
 scraper/sources/nofluffjobs.py  nofluffjobs.com/api/search/posting

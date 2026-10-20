@@ -2,8 +2,15 @@ name: job-alerts
 
 on:
   schedule:
-    - cron: "0 */1 * * *" # Runs every hour
-  workflow_dispatch: {} # "Run workflow" button for manual tests
+    # Every hour at :17. Avoid minute 0: GitHub's scheduler is overloaded at the top of
+    # the hour and delays or drops those runs. Missed runs are caught up automatically.
+    - cron: "17 * * * *"
+  workflow_dispatch:          # "Run workflow" button
+    inputs:
+      test_hours:
+        description: "TEST MODE: send up to 3 matches per platform from the last N hours (e.g. 48). Ignores and doesn't change seen jobs. Leave empty for a normal run."
+        required: false
+        default: ""
 
 permissions:
   contents: write # needed to commit seen_jobs.json back
@@ -30,7 +37,13 @@ jobs:
         env:
           TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python -m scraper.main
+          TEST_HOURS: ${{ inputs.test_hours }}
+        run: |
+          if [ -n "$TEST_HOURS" ]; then
+            python -m scraper.main --test "$TEST_HOURS"
+          else
+            python -m scraper.main
+          fi
 
       - name: Save seen jobs
         if: success() || failure()

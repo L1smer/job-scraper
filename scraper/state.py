@@ -18,6 +18,9 @@ class State:
                 data = {}
         self.seen: dict[str, str] = data.get("seen", {})
         self.failures: dict[str, int] = data.get("failures", {})
+        self.last_run: datetime | None = (
+            datetime.fromisoformat(data["last_run"]) if data.get("last_run") else None
+        )
         self.is_new_file = not self.path.exists()
 
     def has(self, key: str) -> bool:
@@ -33,7 +36,9 @@ class State:
             if datetime.fromisoformat(v) >= cutoff
         }
         self.path.write_text(
-            json.dumps({"seen": dict(sorted(self.seen.items())), "failures": self.failures},
+            json.dumps({"last_run": self.last_run.isoformat(timespec="seconds") if self.last_run else None,
+                        "failures": self.failures,
+                        "seen": dict(sorted(self.seen.items()))},
                        indent=1, ensure_ascii=False) + "\n",
             encoding="utf-8",
         )

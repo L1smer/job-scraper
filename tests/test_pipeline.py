@@ -156,3 +156,27 @@ def test_jobspy_row_with_missing_values(monkeypatch):
     assert flt.prefilter(job)[0]
     res = flt.evaluate(job)
     assert res.ok and not res.requirements_checked
+
+
+def test_catch_up_window_after_skipped_runs(tmp_path):
+    from scraper.main import window_hours
+    state = State(tmp_path / "s.json")
+    assert window_hours(CONFIG, state, NOW, None) == CONFIG["max_age_hours"]
+    state.last_run = NOW - timedelta(hours=5)          # GitHub skipped 4 scheduled runs
+    assert 5 < window_hours(CONFIG, state, NOW, None) < 5.5
+    state.last_run = NOW - timedelta(days=5)           # long outage -> capped
+    assert window_hours(CONFIG, state, NOW, None) == 24
+    assert window_hours(CONFIG, state, NOW, 48) == 48   # --test override
+
+
+def test_test_mode_ignores_and_keeps_state(tmp_path):
+    fresh = parse_offer(JJIT_OFFER)
+    FakeSource.jobs = [fresh]
+    cfg = {**CONFIG, "sources": {"fake": {"enabled": True}}}
+    state = State(tmp_path / "seen.json")
+    state.add(fresh.key)                                # already seen...
+    tg = Telegram(None, None, dry_run=True)
+    matches = run(cfg, state, tg, sources_override={"fake": FakeSource},
+                  test=True, max_age_override=48, per_source_limit=3)
+    assert len(matches) == 1                            # ...but test mode still shows it
+    assert state.last_run is None and list(state.seen) == [fresh.key]

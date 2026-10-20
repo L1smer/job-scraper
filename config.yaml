@@ -6,6 +6,8 @@
 # Only offers published within this window are considered "new".
 # Keep it a bit larger than the schedule interval (1h) so a delayed run doesn't miss anything.
 max_age_hours: 3
+# If GitHub skipped scheduled runs, look back to the last successful run instead (at most this many hours).
+max_catchup_hours: 24
 max_notifications_per_run: 25
 
 profile:
@@ -110,7 +112,7 @@ sources:
     enabled: true
     # Category slugs as in justjoin.it URLs (javascript, mobile, ...). Empty = all categories.
     categories: []
-    max_batches: 15          # ~10 offers per batch, stops early once offers get older than max_age_hours
+    max_batches: 30          # ~10 offers per batch, stops early once offers are older than the window
 
   nofluffjobs:
     enabled: true
